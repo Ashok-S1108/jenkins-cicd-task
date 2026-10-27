@@ -5,7 +5,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'jenkins-cicd-task'
         CONTAINER_NAME = 'jenkins-cicd-app'
-        HOST_PORT = '3000'
+        HOST_PORT = '3001'
         APP_PORT = '3000'
     }
 
