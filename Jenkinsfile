@@ -24,9 +24,11 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'node --version'
-                sh 'npm --version'
-                sh 'docker image inspect ${IMAGE_NAME}:latest'
+                sh '''
+                    docker run --rm ${IMAGE_NAME}:latest node --version
+                    docker run --rm ${IMAGE_NAME}:latest npm --version
+                    docker image inspect ${IMAGE_NAME}:latest
+                '''
             }
         }
 
