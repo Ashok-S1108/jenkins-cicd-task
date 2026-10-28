@@ -50,10 +50,16 @@ pipeline {
             }
         }
 
+        
         stage('Deploy') {
             steps {
                 sh '''
-                    docker rm -f ${CONTAINER_NAME} || true
+                    set -e
+
+                    if docker container inspect ${CONTAINER_NAME} >/dev/null 2>&1; then
+                        docker stop ${CONTAINER_NAME}
+                        docker rm ${CONTAINER_NAME}
+                    fi
 
                     docker run -d \
                         --name ${CONTAINER_NAME} \
@@ -63,6 +69,7 @@ pipeline {
                 '''
             }
         }
+
 
         stage('Health Check') {
             steps {
