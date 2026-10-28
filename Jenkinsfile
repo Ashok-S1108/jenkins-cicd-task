@@ -7,7 +7,6 @@ pipeline {
         CONTAINER_NAME = 'jenkins-cicd-app'
         HOST_PORT = '3001'
         APP_PORT = '3000'
-        NODE_IMAGE = 'node:22-alpine'
     }
 
     stages {
@@ -17,14 +16,17 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME}:latest .'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    docker run --rm \
-                        -v "$WORKSPACE:/app" \
-                        -w /app \
-                        ${NODE_IMAGE} \
-                        npm ci
+                    docker run --rm ${IMAGE_NAME}:latest npm --version
+                    echo "Dependencies were installed during the Docker build."
                 '''
             }
         }
@@ -32,20 +34,10 @@ pipeline {
         stage('Code Quality') {
             steps {
                 sh '''
-                    docker run --rm \
-                        -v "$WORKSPACE:/app" \
-                        -w /app \
-                        ${NODE_IMAGE} \
-                        sh -c "node --check app.js &&
-                               node --check bin/www &&
-                               node --check routes/index.js"
+                    docker run --rm ${IMAGE_NAME}:latest node --check app.js
+                    docker run --rm ${IMAGE_NAME}:latest node --check bin/www
+                    docker run --rm ${IMAGE_NAME}:latest node --check routes/index.js
                 '''
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ${IMAGE_NAME}:latest .'
             }
         }
 
@@ -53,7 +45,6 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm ${IMAGE_NAME}:latest node --version
-                    docker run --rm ${IMAGE_NAME}:latest npm --version
                     docker image inspect ${IMAGE_NAME}:latest
                 '''
             }
